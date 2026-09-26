@@ -15,8 +15,10 @@ jobs:
 
       - name: فك المشروع
         run: |
+          rm -rf project
           mkdir -p project
-          unzip -q Ibrahim_AI_Agent_v1.zip -d project
+          unzip -o -q Ibrahim_AI_Agent_v1.zip -d project
+          ls -R project | head -n 100
 
       - name: إعداد Java
         uses: actions/setup-java@v4
@@ -37,7 +39,10 @@ jobs:
 
       - name: بناء APK
         run: |
-          cd project/android
+          GRADLEW_PATH=$(find project -name gradlew | head -n 1)
+          echo "Found gradlew at: $GRADLEW_PATH"
+          DIR=$(dirname "$GRADLEW_PATH")
+          cd "$DIR"
           chmod +x gradlew
           ./gradlew assembleDebug
 
@@ -45,4 +50,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: Ibrahim-AI-Agent-APK
-          path: project/android/app/build/outputs/apk/debug/app-debug.apk
+          path: |
+            **/app/build/outputs/apk/debug/*.apk
