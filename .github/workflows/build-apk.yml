@@ -13,32 +13,33 @@ jobs:
       - name: تحميل المشروع
         uses: actions/checkout@v4
 
+      - name: فك المشروع
+        run: |
+          mkdir -p project
+          unzip -q Ibrahim_AI_Agent_v1.zip -d project
+
       - name: إعداد Java
         uses: actions/setup-java@v4
         with:
           distribution: temurin
           java-version: '17'
 
-      - name: إعداد Gradle
-        uses: gradle/actions/setup-gradle@v4
-        with:
-          gradle-version: '8.13'
-
-      - name: إعداد Android SDK
-        uses: android-actions/setup-android@v3
+      - name: إعداد Android SDK الجديد
+        uses: android-actions/setup-android@v4
 
       - name: تثبيت Android SDK 36
         run: |
-          sdkmanager "platforms;android-36" "build-tools;36.0.0"
+          yes | sdkmanager --licenses
+          sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
 
-      - name: فك المشروع
-        run: |
-          mkdir project
-          unzip -q Ibrahim_AI_Agent_v1.zip -d project
+      - name: إعداد Gradle
+        uses: gradle/actions/setup-gradle@v4
 
       - name: بناء APK
         run: |
-          gradle -p project/android assembleDebug
+          cd project/android
+          chmod +x gradlew
+          ./gradlew assembleDebug
 
       - name: حفظ APK
         uses: actions/upload-artifact@v4
