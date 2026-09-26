@@ -18,7 +18,8 @@ jobs:
           rm -rf project
           mkdir -p project
           unzip -o -q Ibrahim_AI_Agent_v1.zip -d project
-          ls -R project | head -n 100
+          echo "--- محتويات المشروع ---"
+          ls -R project | head -n 200
 
       - name: إعداد Java
         uses: actions/setup-java@v4
@@ -26,10 +27,10 @@ jobs:
           distribution: temurin
           java-version: '17'
 
-      - name: إعداد Android SDK الجديد
+      - name: إعداد Android SDK
         uses: android-actions/setup-android@v4
 
-      - name: تثبيت Android SDK 36
+      - name: تثبيت SDK
         run: |
           yes | sdkmanager --licenses
           sdkmanager "platforms;android-36" "build-tools;36.0.0" "platform-tools"
@@ -39,10 +40,15 @@ jobs:
 
       - name: بناء APK
         run: |
-          GRADLEW_PATH=$(find project -name gradlew | head -n 1)
-          echo "Found gradlew at: $GRADLEW_PATH"
-          DIR=$(dirname "$GRADLEW_PATH")
-          cd "$DIR"
+          cd project
+          # البحث عن مجلد المشروع الحقيقي
+          APP_DIR=$(find . -name "build.gradle*" | head -n 1 | xargs dirname)
+          echo "مجلد التطبيق هو: $APP_DIR"
+          cd "$APP_DIR"
+          if [ ! -f "gradlew" ]; then
+            echo "gradlew غير موجود، سيتم إنشاؤه"
+            gradle wrapper
+          fi
           chmod +x gradlew
           ./gradlew assembleDebug
 
@@ -51,4 +57,4 @@ jobs:
         with:
           name: Ibrahim-AI-Agent-APK
           path: |
-            **/app/build/outputs/apk/debug/*.apk
+            **/build/outputs/apk/debug/*.apk
